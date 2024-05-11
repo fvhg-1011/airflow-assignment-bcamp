@@ -13,12 +13,9 @@ list_table = Variable.get("mysql_to_hive", deserialize_json=True)
 def transform_logic(data):
     transformed_data = []
     for row in data:
-        transformed_row = tuple(
-            value.capitalize() if isinstance(value, str) else value for value in row
-        )
+        transformed_row = tuple(value.capitalize() if isinstance(value, str) else value for value in row)
         transformed_data.append(transformed_row)
     return transformed_data
-
 
 @dag()
 def test_assignment():
@@ -65,19 +62,13 @@ def test_assignment():
                 task_id="load_to_hive",
                 hive_cli_conn_id="hive_cli_default",
                 hql="""
-                    INSERT INTO """
-                + table
-                + """ (
-                        {% for column in ti.xcom_pull(task_ids='"""
-                + group_id
-                + """.get_schema') %}
+                    INSERT INTO """ + table + """ (
+                        {% for column in ti.xcom_pull(task_ids='""" + group_id + """.get_schema') %}
                             {{ column[0] }}{{ ', ' if not loop.last else '' }}
                         {% endfor %}
                     )
                     VALUES
-                        {% for data in ti.xcom_pull(task_ids='"""
-                + group_id
-                + """.transform_data') %}
+                        {% for data in ti.xcom_pull(task_ids='""" + group_id + """.transform_data') %}
                             (
                                 {% for column in data %}
                                     {{ "'"~column~"'" if column is string else column }}{{ ', ' if not loop.last else '' }}
@@ -86,11 +77,8 @@ def test_assignment():
                         {% endfor %}
                 """,
             )
-            (
-                start_task >> get_schema >> extract >> transform >> create_hive_table() >> load >> end_task
-            )
+            start_task >> get_schema >> extract >> transform >> create_hive_table() >> load >> end_task
 
         group()
-
 
 test_assignment()
