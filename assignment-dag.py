@@ -87,13 +87,7 @@ def test_assignment():
                 """,
             )
             (
-                start_task
-                >> get_schema
-                >> extract
-                >> transform
-                >> create_hive_table()
-                >> load
-                >> end_task
+                start_task >> get_schema >> extract >> transform >> create_hive_table() >> load >> end_task
             )
 
         group()
